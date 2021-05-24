@@ -1,7 +1,26 @@
+require('dotenv').config();
 const express = require('express');
+const mongoose = require('mongoose');
+const postsRoute = require('./routes/posts');
 
 // Initiates express app
 const app = express();
+
+// Setup mongoose connection and handle deprecation
+const uri = `mongodb+srv://admin:${process.env.DB_AUTHPASS}@cluster0.w6zgq.mongodb.net/mean-project?retryWrites=true&w=majority`;
+mongoose.set('useNewUrlParser', true);
+mongoose.set('useFindAndModify', false);
+mongoose.set('useCreateIndex', true);
+mongoose.set('useUnifiedTopology', true);
+mongoose.connect(uri)
+   .then(
+      () => {
+         console.log('Connected successful to MangoDB.');
+   })
+   .catch(
+      err => {
+         console.log(err);
+   });
 
 // use define or register middlewares for express app
 // app.use((req, res, next) => {
@@ -24,32 +43,8 @@ app.use((req, res, next) => {
    next();
 });
 
-// posts path and methods
-app.post('/api/posts', (req, res, next) => {
-   const post = req.body;
-   console.log(post);
-   res.status(201).json({message: "Post received successfully."});
-});
-
-app.get('/api/posts', (req, res) => {
-   const posts = [
-      {
-         id: "001", 
-         title: "First post from server", 
-         content: "This is first post's content from server"
-      }, 
-      {
-         id: "002", 
-         title: "Second post from server", 
-         content: "This is second post's content from server"
-      }
-   ];
-   // does not require return, will return by default, do not use next() if sending response
-   res.status(200).json({
-      message: "Post fetched successfully.", 
-      posts: posts
-   });
-});
+// move all routes to different route modules
+app.use('/api/posts', postsRoute);
 
 module.exports = app;
 

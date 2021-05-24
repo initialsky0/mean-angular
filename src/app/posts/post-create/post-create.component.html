@@ -1,29 +1,38 @@
 <mat-card>
-   <form (ngSubmit)="onSubmit(postForm)" #postForm="ngForm">
-      <mat-form-field>
-         <input 
-            matInput 
-            type="text" 
-            name="title" 
-            placeholder="Title" 
-            ngModel 
-            #title="ngModel" 
-            required
-         >
-         <mat-error *ngIf="title.invalid && title.touched">{{ "Please enter the title for the new post." }}</mat-error>
-      </mat-form-field>
-      <mat-form-field>
-         <textarea 
-            matInput 
-            rows="5" 
-            name="content" 
-            placeholder="Post Content" 
-            ngModel 
-            #content="ngModel" 
-            required
-         ></textarea>
-         <mat-error *ngIf="content.invalid && content.touched">{{ "Please enter the content for the new post." }}</mat-error>
-      </mat-form-field>
-      <button mat-raised-button color='accent' type="submit">Submit</button>
-   </form>
+   <mat-spinner *ngIf="loading; else createForm"></mat-spinner>
+   <ng-template #createForm>
+      <form (ngSubmit)="onSubmit()" [formGroup]="postForm">
+         <mat-form-field>
+            <!-- [formControlName]="'title'" equivalent -->
+            <input 
+               matInput 
+               type="text" 
+               formControlName="title" 
+               placeholder="Title" 
+            >
+            <mat-error 
+               *ngIf="postForm.get('title').invalid && postForm.get('title').touched"
+            >{{ "Please enter the title for the new post." }}</mat-error>
+         </mat-form-field>
+         <mat-form-field>
+            <textarea 
+               matInput 
+               rows="5" 
+               formControlName="content" 
+               placeholder="Post Content" 
+            ></textarea>
+            <mat-error 
+               *ngIf="postForm.get('content').invalid && postForm.get('content').touched"
+            >{{ "Please enter the content for the new post." }}</mat-error>
+         </mat-form-field>
+         <div class="img-preview" *ngIf="imgPreview">
+            <img [src]="imgPreview" [alt]="postForm.value.title">
+         </div>
+         <div class="btn-container">
+            <button mat-stroked-button type="button" (click)="filePicker.click()">Upload Image</button>
+            <input type="file" #filePicker (change)="onImgSelected($event)">
+            <button mat-raised-button color='accent' type="submit">Submit</button>
+         </div>
+      </form>
+   </ng-template>
 </mat-card>

@@ -1,3 +1,7 @@
+mat-spinner {
+   margin: auto;
+}
+
 form {
    mat-form-field {
       margin-bottom: 1rem;
@@ -6,5 +10,24 @@ form {
    mat-form-field, 
    textarea {
       width: 100%;
+   }
+
+   .img-preview {
+      height: 20rem;
+      margin: 1rem 0;
+      text-align: center;
+
+      img {
+         height: 100%;
+      }
+   }
+
+   .btn-container {
+      display: flex;
+      justify-content: space-between;
+
+      input[type="file"] {
+         display: none;
+      }
    }
 }
