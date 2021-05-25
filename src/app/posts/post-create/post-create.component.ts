@@ -3,6 +3,7 @@ import { FormControl, FormGroup, Validators } from "@angular/forms";
 import { ActivatedRoute, ParamMap } from "@angular/router";
 import { Post } from "../post.model";
 import { PostService } from "../post.service";
+import { mimeType } from "./mime-type.validator";
 
 @Component({
    selector: 'app-post-create', 
@@ -26,7 +27,7 @@ export class PostCreateComponent implements OnInit {
       this.postForm = new FormGroup({
          'title': new FormControl(null, { validators: [Validators.required, Validators.minLength(3)] }), 
          'content': new FormControl(null, { validators: [Validators.required] }), 
-         'image': new FormControl(null, { validators: [Validators.required] })
+         'image': new FormControl(null, { validators: [Validators.required], asyncValidators: [mimeType] })
       })
 
       // preload content for post edit mode when refresh
@@ -42,9 +43,10 @@ export class PostCreateComponent implements OnInit {
                      this.editPost = {
                         id: postRes._id, 
                         title: postRes.title, 
-                        content: postRes.content
+                        content: postRes.content, 
+                        imagePath: postRes.imagePath
                      };
-                     this.postForm.setValue({ 'title': postRes.title, 'content': postRes.content });
+                     this.postForm.setValue({ 'title': postRes.title, 'content': postRes.content, 'image': postRes.imagePath });
                   }
                }
             );
@@ -58,22 +60,33 @@ export class PostCreateComponent implements OnInit {
 
    onImgSelected(event: Event) {
       const file = (event.target as HTMLInputElement).files[0];
-      this.postForm.patchValue({ 'image': file });
-      this.postForm.get('image').updateValueAndValidity();
-      const reader = new FileReader();
-      reader.onload = () => {
-         this.imgPreview = reader.result as string;
-      };
-      reader.readAsDataURL(file);
+      if(file) {
+         this.postForm.patchValue({ 'image': file });
+         this.postForm.get('image').updateValueAndValidity();
+         const reader = new FileReader();
+         reader.onload = () => {
+            this.imgPreview = reader.result as string;
+         };
+         reader.readAsDataURL(file);
+      }
    }
 
    onSubmit() {
       if(this.postForm.invalid) return;
       this.loading = true;
       if(!this.editMode) {
-         this.postService.addPost(this.postForm.value.title, this.postForm.value.content);
+         this.postService.addPost(
+            this.postForm.value.title, 
+            this.postForm.value.content, 
+            this.postForm.value.image
+         );
       } else {
-         this.postService.updatePost(this.postId, this.postForm.value.title, this.postForm.value.content);
+         this.postService.updatePost(
+            this.postId, 
+            this.postForm.value.title, 
+            this.postForm.value.content, 
+            this.postForm.value.image
+         );
       }
       this.postForm.reset();
    }

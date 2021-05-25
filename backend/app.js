@@ -1,4 +1,5 @@
 require('dotenv').config();
+const path = require('path');
 const express = require('express');
 const mongoose = require('mongoose');
 const postsRoute = require('./routes/posts');
@@ -32,6 +33,9 @@ mongoose.connect(uri)
 // body-parser is deprecated because it's built-in for express now
 app.use(express.json());
 app.use(express.urlencoded({ extended: false }));
+
+// allow access to static files
+app.use('/images', express.static(path.join('backend/images')));
 
 // manual setup for CORS handle
 app.use((req, res, next) => {

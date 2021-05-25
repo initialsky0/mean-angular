@@ -41,8 +41,11 @@ yarn-error.log
 testem.log
 /typings
 
-#private keys
+# private keys
 .env
+
+# image files
+/backend/images
 
 # System Files
 .DS_Store

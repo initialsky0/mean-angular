@@ -3,6 +3,16 @@
    margin-top: 1rem;
 }
 
+.picture-container {
+   width: 100%;
+   text-align: center;
+
+   img {
+      width: 70%;
+      box-shadow: 1px 1px 5px rgba(0, 0, 0, 0.5);
+   }
+}
+
 mat-spinner {
    margin: auto;
 }

@@ -25,7 +25,7 @@
                *ngIf="postForm.get('content').invalid && postForm.get('content').touched"
             >{{ "Please enter the content for the new post." }}</mat-error>
          </mat-form-field>
-         <div class="img-preview" *ngIf="imgPreview">
+         <div class="img-preview" *ngIf="imgPreview && postForm.get('image').valid">
             <img [src]="imgPreview" [alt]="postForm.value.title">
          </div>
          <div class="btn-container">
