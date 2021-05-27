@@ -17,9 +17,9 @@ router.post("/signup", (req, res) => {
             res.status(201).json({
                message: "Sign up success."
             });
-         }).catch(error => {
+         }).catch(() => {
             res.status(500).json({
-               error
+               message: "Invalid sign up credentials, this email is already registered."
             });
          });
       });
@@ -30,15 +30,15 @@ router.post("/login", (req, res) => {
    User.findOne({ email: req.body.email }).then(user => {
       // fetch user, if exist compare hashed password
       if(!user) {
-         // this is a reject promise, and will end the chain
-         return res.status(401).json({ message: "Authenication failed." });
+         // this value will be passed to the next then chain (result)
+         return false;
       }
       tempUser = user
       return bcrypt.compare(req.body.password, user.password);
    }).then(result => {
       // if password is valid, respond with a authentication token
       if(!result) {
-         return res.status(401).json({ message: "Authenication failed." });
+         return res.status(401).json({ message: "Authenication failed. Please enter a valid credential." });
       }
       const token = jWToken.sign(
          { email: tempUser.email, userId: tempUser._id }, 
@@ -47,11 +47,12 @@ router.post("/login", (req, res) => {
       );
       res.status(200).json({ 
          token, 
+         userId: tempUser._id, 
          expiresIn: 3600 
       });
-   }).catch(err => {
+   }).catch(() => {
       // handle error
-      return res.status(401).json({ error: err });
+      return res.status(401).json({ message: "Authenication failed. An error occurred during login." });
    })
 });
 

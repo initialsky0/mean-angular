@@ -18,8 +18,8 @@ export class PostService {
       .pipe(
          map(dbPosts => (
             {
-               posts: dbPosts.posts.map(({title, content, _id, imagePath}) => 
-                  ({ id: _id, title, content, imagePath })), 
+               posts: dbPosts.posts.map(({title, content, _id, imagePath, author}) => 
+                  ({ id: _id, title, content, imagePath, author })), 
                maxPost: dbPosts.maxPosts
             }
          ))
@@ -36,7 +36,7 @@ export class PostService {
    getPostById(postId: string) {
       // local fetch post
       // return { ...this.posts.find(post => post.id === postId) };
-      interface PostResponse { _id: string; title: string; content: string, imagePath: string };
+      interface PostResponse { _id: string; title: string; content: string; imagePath: string; author: string };
       return this.http.get<PostResponse>(`http://localhost:3000/api/posts/${postId}`);
    }
 
@@ -65,7 +65,7 @@ export class PostService {
          postData.append('content', content);
          postData.append('image', image, title);
       } else {
-         postData = { id, title, content, imagePath: image };
+         postData = { id, title, content, imagePath: image, author: null };
       }
       this.http.patch<{ message: string }>(`http://localhost:3000/api/posts/${id}`, postData)
       .subscribe(() => {

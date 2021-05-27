@@ -1,6 +1,8 @@
-import { Component, OnInit } from "@angular/core";
+import { Component, OnDestroy, OnInit } from "@angular/core";
 import { FormControl, FormGroup, Validators } from "@angular/forms";
 import { ActivatedRoute, ParamMap } from "@angular/router";
+import { Subscription } from "rxjs";
+import { AuthService } from "src/app/auth/auth.service";
 import { Post } from "../post.model";
 import { PostService } from "../post.service";
 import { mimeType } from "./mime-type.validator";
@@ -10,10 +12,11 @@ import { mimeType } from "./mime-type.validator";
    templateUrl: './post-create.component.html', 
    styleUrls: ['./post-create.component.scss']
 })
-export class PostCreateComponent implements OnInit {
+export class PostCreateComponent implements OnInit, OnDestroy {
    constructor(
       private postService: PostService, 
-      private actRoute: ActivatedRoute
+      private actRoute: ActivatedRoute, 
+      private authService: AuthService
    ) { }
    editPost: Post;
    postForm: FormGroup;
@@ -21,8 +24,14 @@ export class PostCreateComponent implements OnInit {
    loading = false;
    private postId: string;
    private editMode = false;
+   private authStateSub: Subscription;
    
    ngOnInit() {
+      // Sub to authStateListener
+      this.authStateSub = this.authService.getAuthStateListener().subscribe(
+         () => {
+            this.loading = false;
+      });
       // initiate formgroup
       this.postForm = new FormGroup({
          'title': new FormControl(null, { validators: [Validators.required, Validators.minLength(3)] }), 
@@ -44,7 +53,8 @@ export class PostCreateComponent implements OnInit {
                         id: postRes._id, 
                         title: postRes.title, 
                         content: postRes.content, 
-                        imagePath: postRes.imagePath
+                        imagePath: postRes.imagePath, 
+                        author: postRes.author
                      };
                      this.postForm.setValue({ 'title': postRes.title, 'content': postRes.content, 'image': postRes.imagePath });
                   }
@@ -56,6 +66,10 @@ export class PostCreateComponent implements OnInit {
             this.editPost = null;
          }
       });
+   }
+
+   ngOnDestroy() {
+      if(this?.authStateSub?.unsubscribe) this.authStateSub.unsubscribe();
    }
 
    onImgSelected(event: Event) {

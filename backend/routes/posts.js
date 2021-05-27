@@ -33,7 +33,8 @@ router.post('', checkAuth, multer({ storage }).single('image'), (req, res) => {
    const post = new Post({
       title: req.body.title, 
       content: req.body.content, 
-      imagePath: `${url}/images/${req.file.filename}`
+      imagePath: `${url}/images/${req.file.filename}`, 
+      author: req.authData.userId
    });
    // Mongoose schema will auto generate query when call .save method
    post.save().then(saveRes => {
@@ -44,6 +45,8 @@ router.post('', checkAuth, multer({ storage }).single('image'), (req, res) => {
             id: saveRes._id
          }
       });
+   }).catch(() => {
+      res.status(500).json({ message: "Post creation failed." });
    });
 });
 
@@ -58,17 +61,17 @@ router.get('', (req, res) => {
          .limit(pageSize);
    }
    // does not require return, will return by default, do not use next() if sending response
-   fetchQueryPosts
-   .then(response => {
+   fetchQueryPosts.then(response => {
       dbRes = response
       return Post.countDocuments();  
-   })
-   .then(count => {
+   }).then(count => {
       res.status(200).json({
          message: "Post fetched successfully.", 
          posts: dbRes, 
          maxPosts: count
       });
+   }).catch(() => {
+      res.status(500).json({ message: "Posts fetching failed." });
    });
 });
 
@@ -78,10 +81,12 @@ router.get('/:id', (req, res) => {
          if(resPost) {
             res.status(200).json(resPost);
          } else {
-            res.status(404).json();
+            res.status(404).json({ message: "This post does not exist." });
          }
       }
-   );
+   ).catch(() => {
+      res.status(500).json({ message: "Post fetching failed." });
+   });
 });
 
 router.patch('/:id', checkAuth, multer({ storage }).single('image'), (req, res) => {
@@ -94,17 +99,28 @@ router.patch('/:id', checkAuth, multer({ storage }).single('image'), (req, res) 
       content: req.body.content, 
       imagePath
    };
-   Post.updateOne({_id: req.params.id}, post).then(
-      () => {
-         res.status(200).json({message: "Edit successful."});
+   Post.updateOne({ _id: req.params.id, author: req.authData.userId }, post).then(
+      result => {
+         if(result.nModified > 0) {
+            res.status(200).json({ message: "Edit successful." });
+         } else {
+            res.status(401).json({ message: "Edit failed, permission denied." });
+         }
       }
-   );
+   ).catch(() => {
+      res.status(500).json({message: "Post update failed." });
+   });
 });
 
 router.delete('/:id', checkAuth, (req, res) => {
-   Post.deleteOne({ _id: req.params.id }).then(delRes => {
-      console.log(delRes);
-      res.status(200).json({ message: "Post deleted." });
+   Post.deleteOne({ _id: req.params.id, author: req.authData.userId }).then(delRes => {
+      if(delRes.n > 0) {
+         res.status(200).json({ message: "Post deleted." });
+      } else {
+         res.status(401).json({ message: "Delete failed, permission denied." });
+      }
+   }).catch(() => {
+      res.json(500).json({ message: "Delete failed. Please try again later." });
    });
 });
 
