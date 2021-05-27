@@ -8,20 +8,28 @@ import { Post } from "./post.model";
 @Injectable({providedIn: 'root'})
 export class PostService {
    private posts: Post[] = [];
-   private postSubject = new Subject<Post[]>();
+   private postSubject = new Subject<{ posts: Post[], postCount: number }>();
 
    constructor(private http: HttpClient, private router: Router) { }
 
-   getPost() {
-      this.http.get<{ message: string, posts: any }>('http://localhost:3000/api/posts')
+   getPost(postsPerPage: number, pageIndex: number) {
+      const queryParams = `?pagesize=${postsPerPage}&page=${pageIndex}`;
+      this.http.get<{ message: string, posts: any, maxPosts: number }>('http://localhost:3000/api/posts' + queryParams)
       .pipe(
-         map(dbPosts => dbPosts.posts.map(
-            ({title, content, _id, imagePath}) => ({ id: _id, title, content, imagePath })
+         map(dbPosts => (
+            {
+               posts: dbPosts.posts.map(({title, content, _id, imagePath}) => 
+                  ({ id: _id, title, content, imagePath })), 
+               maxPost: dbPosts.maxPosts
+            }
          ))
       )
       .subscribe(pipedData => {
-         this.posts = pipedData;
-         this.postSubject.next([...this.posts]);
+         this.posts = pipedData.posts;
+         this.postSubject.next({
+            posts: [...this.posts], 
+            postCount: pipedData.maxPost
+         });
       });
    }
 
@@ -39,11 +47,11 @@ export class PostService {
       postData.append('image', image, title);
 
       this.http.post<{ message: string, post: Post }>('http://localhost:3000/api/posts', postData)
-      .subscribe(resData => {
-         console.log(resData.message);
-         const post: Post = { id: resData.post.id, title, content, imagePath: resData.post.imagePath };
-         this.posts.push(post);
-         this.postSubject.next([...this.posts]);
+      .subscribe(() => {
+         // console.log(resData.message);
+         // const post: Post = { id: resData.post.id, title, content, imagePath: resData.post.imagePath };
+         // this.posts.push(post);
+         // this.postSubject.next([...this.posts]);
          this.router.navigate(['/']);
       });
    }
@@ -60,30 +68,30 @@ export class PostService {
          postData = { id, title, content, imagePath: image };
       }
       this.http.patch<{ message: string }>(`http://localhost:3000/api/posts/${id}`, postData)
-      .subscribe(editRes => {
-         if(editRes.message === 'Edit successful.') {
-            const newPosts = [...this.posts];
-            const editedPost: Post = { id, title, content, imagePath: null }
-            newPosts.forEach((originPost, i) => {
-               if(originPost.id === id) {
-                  newPosts[i] = editedPost;
-               }
-            });
-            this.posts = newPosts;
-            this.postSubject.next([...this.posts]);
-            this.router.navigate(['/']);
-         }
+      .subscribe(() => {
+         // if(editRes.message === 'Edit successful.') {
+         //    const newPosts = [...this.posts];
+         //    const editedPost: Post = { id, title, content, imagePath: null }
+         //    newPosts.forEach((originPost, i) => {
+         //       if(originPost.id === id) {
+         //          newPosts[i] = editedPost;
+         //       }
+         //    });
+         //    this.posts = newPosts;
+         //    this.postSubject.next([...this.posts]);
+         // }
+         this.router.navigate(['/']);
       });
    }
 
    deletePost(postId: string) {
-      this.http.delete<{ message: string }>(`http://localhost:3000/api/posts/${postId}`)
-      .subscribe(delRes => {
-         if(delRes.message === "Post deleted.") {
-            this.posts = this.posts.filter(post => post.id !== postId);
-            this.postSubject.next([...this.posts]);
-         }
-      });
+      return this.http.delete<{ message: string }>(`http://localhost:3000/api/posts/${postId}`);
+      // .subscribe(delRes => {
+      //    if(delRes.message === "Post deleted.") {
+      //       this.posts = this.posts.filter(post => post.id !== postId);
+      //       this.postSubject.next([...this.posts]);
+      //    }
+      // });
    }
 
    getPostObservable() {

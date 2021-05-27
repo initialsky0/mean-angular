@@ -9,7 +9,7 @@
             <img [src]="post.imagePath" [alt]="post.title">
          </div>
          <p>{{ post.content }}</p>
-         <mat-action-row>
+         <mat-action-row *ngIf="authState">
             <a mat-button color="primary" [routerLink]="['edit', post.id]">EDIT</a>
             <button mat-button color="warn" (click)="onDelete(post.id)">DELETE</button>
          </mat-action-row>
@@ -19,3 +19,10 @@
       <p style="text-align: center;" class="mat-body-1">No post created</p>
    </ng-template>
 </ng-template>
+<!-- paginator have to be on it's own -->
+<mat-paginator *ngIf="totolPosts > 0"
+   [length]="totolPosts" 
+   [pageSize]="postsPerPage" 
+   [pageSizeOptions]="pageSizeOptions" 
+   (page)="onChangePage($event)"
+></mat-paginator>

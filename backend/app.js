@@ -2,7 +2,10 @@ require('dotenv').config();
 const path = require('path');
 const express = require('express');
 const mongoose = require('mongoose');
+
+// routers
 const postsRoute = require('./routes/posts');
+const authRoute = require('./routes/auth');
 
 // Initiates express app
 const app = express();
@@ -41,7 +44,7 @@ app.use('/images', express.static(path.join('backend/images')));
 app.use((req, res, next) => {
    res.setHeader("Access-Control-Allow-Origin", "*");
    res.setHeader("Access-Control-Allow-Headers", 
-      "Origin, X-Requested-With, Content-Type, Accept");
+      "Origin, X-Requested-With, Content-Type, Accept, Authorization");
    res.setHeader("Access-Control-Allow-Methods",
       "GET, POST, PATCH, DELETE, OPTIONS");
    next();
@@ -49,6 +52,7 @@ app.use((req, res, next) => {
 
 // move all routes to different route modules
 app.use('/api/posts', postsRoute);
+app.use('/api/auth', authRoute);
 
 module.exports = app;
 

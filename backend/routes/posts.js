@@ -2,6 +2,7 @@ const express = require('express');
 const router = express.Router();
 const Post = require('../models/post');
 const multer = require('multer');
+const checkAuth = require('../middleware/check-auth');
 
 // multer setup for image upload
 const MIME_TYPE_MAP = {
@@ -26,7 +27,7 @@ const storage = multer.diskStorage({
 });
 
 // posts path and methods, { storage: storage }
-router.post('', multer({ storage }).single('image'), (req, res) => {
+router.post('', checkAuth, multer({ storage }).single('image'), (req, res) => {
    // generate url
    const url = `${req.protocol}://${req.get('host')}`;
    const post = new Post({
@@ -47,14 +48,28 @@ router.post('', multer({ storage }).single('image'), (req, res) => {
 });
 
 router.get('', (req, res) => {
+   const pageSize = +req.query.pagesize;
+   const currentPage = +req.query.page;
+   const fetchQueryPosts = Post.find();
+   let dbRes;
+   if(pageSize && currentPage) {
+      fetchQueryPosts
+         .skip(pageSize * (currentPage - 1))
+         .limit(pageSize);
+   }
    // does not require return, will return by default, do not use next() if sending response
-   Post.find()
-      .then(dbRes => {
-         res.status(200).json({
-            message: "Post fetched successfully.", 
-            posts: dbRes
-         });
+   fetchQueryPosts
+   .then(response => {
+      dbRes = response
+      return Post.countDocuments();  
+   })
+   .then(count => {
+      res.status(200).json({
+         message: "Post fetched successfully.", 
+         posts: dbRes, 
+         maxPosts: count
       });
+   });
 });
 
 router.get('/:id', (req, res) => {
@@ -69,7 +84,7 @@ router.get('/:id', (req, res) => {
    );
 });
 
-router.patch('/:id', multer({ storage }).single('image'), (req, res) => {
+router.patch('/:id', checkAuth, multer({ storage }).single('image'), (req, res) => {
    const imagePath = req.file 
       ? `${req.protocol}://${req.get('host')}/images/${req.file.filename}` 
       : req.body.imagePath;
@@ -86,7 +101,7 @@ router.patch('/:id', multer({ storage }).single('image'), (req, res) => {
    );
 });
 
-router.delete('/:id', (req, res) => {
+router.delete('/:id', checkAuth, (req, res) => {
    Post.deleteOne({ _id: req.params.id }).then(delRes => {
       console.log(delRes);
       res.status(200).json({ message: "Post deleted." });

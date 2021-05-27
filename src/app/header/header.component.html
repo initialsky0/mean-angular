@@ -4,9 +4,22 @@
   </span>
   <span>
     <ul>
-      <li>
-        <a mat-button routerLink="/create" routerLinkActive="route-active">New Post</a>
-      </li>
+      <ng-container *ngIf="!authState; else authNavItems">
+        <li>
+          <a mat-button routerLink="/login" routerLinkActive="route-active">Login</a>
+        </li>
+        <li>
+          <a mat-button routerLink="/signup" routerLinkActive="route-active">Sign Up</a>
+        </li>
+      </ng-container>
+      <ng-template #authNavItems>
+        <li>
+          <a mat-button routerLink="/create" routerLinkActive="route-active">New Post</a>
+        </li>
+        <li>
+          <button mat-button (click)="onLogout()">Logout</button>
+        </li>
+      </ng-template>
     </ul>
   </span>
  </mat-toolbar>
