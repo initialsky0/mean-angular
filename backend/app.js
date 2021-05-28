@@ -1,4 +1,3 @@
-require('dotenv').config();
 const path = require('path');
 const express = require('express');
 const mongoose = require('mongoose');
@@ -9,6 +8,13 @@ const authRoute = require('./routes/auth');
 
 // Initiates express app
 const app = express();
+
+// run during development
+if (!process.env.NODE_ENV || process.env.NODE_ENV === 'development') {
+   console.log('In dev mode');
+   require('dotenv').config();
+}
+
 
 // Setup mongoose connection and handle deprecation
 const uri = `mongodb+srv://admin:${process.env.DB_AUTHPASS}@cluster0.w6zgq.mongodb.net/mean-project?retryWrites=true&w=majority`;

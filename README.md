@@ -1,5 +1,7 @@
 # MeanProject
 
+This project is created to practice and learn Angular and get familiar with backend. It models a posting website, allowing users to create posts after user login with registered credential. Only post author can edit or delete post. The route is protected based on authorization state.   
+
 This project was generated with [Angular CLI](https://github.com/angular/angular-cli) version 11.2.10.
 
 ## Development server

@@ -2,8 +2,11 @@ import { HttpClient } from "@angular/common/http";
 import { Injectable } from "@angular/core";
 import { Router } from "@angular/router";
 import { Subject } from "rxjs";
-import { map } from 'rxjs/operators';
+import { map } from "rxjs/operators";
 import { Post } from "./post.model";
+import { environment } from "../../environments/environment";
+
+const BACKEND_URL = `${environment.apiUrl}/posts`
 
 @Injectable({providedIn: 'root'})
 export class PostService {
@@ -14,7 +17,7 @@ export class PostService {
 
    getPost(postsPerPage: number, pageIndex: number) {
       const queryParams = `?pagesize=${postsPerPage}&page=${pageIndex}`;
-      this.http.get<{ message: string, posts: any, maxPosts: number }>('http://localhost:3000/api/posts' + queryParams)
+      this.http.get<{ message: string, posts: any, maxPosts: number }>(`${BACKEND_URL}${queryParams}`)
       .pipe(
          map(dbPosts => (
             {
@@ -37,7 +40,7 @@ export class PostService {
       // local fetch post
       // return { ...this.posts.find(post => post.id === postId) };
       interface PostResponse { _id: string; title: string; content: string; imagePath: string; author: string };
-      return this.http.get<PostResponse>(`http://localhost:3000/api/posts/${postId}`);
+      return this.http.get<PostResponse>(`${BACKEND_URL}/${postId}`);
    }
 
    addPost(title: string, content: string, image: File) {
@@ -46,7 +49,7 @@ export class PostService {
       postData.append('content', content);
       postData.append('image', image, title);
 
-      this.http.post<{ message: string, post: Post }>('http://localhost:3000/api/posts', postData)
+      this.http.post<{ message: string, post: Post }>(`${BACKEND_URL}`, postData)
       .subscribe(() => {
          // console.log(resData.message);
          // const post: Post = { id: resData.post.id, title, content, imagePath: resData.post.imagePath };
@@ -67,7 +70,7 @@ export class PostService {
       } else {
          postData = { id, title, content, imagePath: image, author: null };
       }
-      this.http.patch<{ message: string }>(`http://localhost:3000/api/posts/${id}`, postData)
+      this.http.patch<{ message: string }>(`${BACKEND_URL}/${id}`, postData)
       .subscribe(() => {
          // if(editRes.message === 'Edit successful.') {
          //    const newPosts = [...this.posts];
@@ -85,7 +88,7 @@ export class PostService {
    }
 
    deletePost(postId: string) {
-      return this.http.delete<{ message: string }>(`http://localhost:3000/api/posts/${postId}`);
+      return this.http.delete<{ message: string }>(`${BACKEND_URL}/${postId}`);
       // .subscribe(delRes => {
       //    if(delRes.message === "Post deleted.") {
       //       this.posts = this.posts.filter(post => post.id !== postId);
