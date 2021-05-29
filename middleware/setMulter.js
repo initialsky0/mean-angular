@@ -1,4 +1,5 @@
 const multer = require('multer');
+const path = require('path');
 
 // multer setup for image upload
 const MIME_TYPE_MAP = {
@@ -13,7 +14,7 @@ const storage = multer.diskStorage({
       if(isValid) {
          error = null;
       }
-      callback(error, "./images");
+      callback(error, path.join(__dirname, '..', 'images'));
    }, 
    filename: (req, file, callback) => {
       const name = file.originalname.toLowerCase().split(' ').join('_');
