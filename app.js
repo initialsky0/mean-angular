@@ -1,4 +1,5 @@
 const path = require('path');
+const fs = require('fs');
 const express = require('express');
 const mongoose = require('mongoose');
 
@@ -15,6 +16,10 @@ if (!process.env.NODE_ENV || process.env.NODE_ENV === 'development') {
    require('dotenv').config();
 }
 
+// check if images dir exist in server, if not create the dir
+if(!fs.existsSync(path.join(__dirname, 'images'))) {
+   fs.mkdirSync(path.join(__dirname, 'images'));
+}
 
 // Setup mongoose connection and handle deprecation
 const uri = `mongodb+srv://admin:${process.env.DB_AUTHPASS}@cluster0.w6zgq.mongodb.net/mean-project?retryWrites=true&w=majority`;
