@@ -44,8 +44,9 @@ testem.log
 # private keys
 .env
 
-# image files
-/backend/images
+# backend
+/backend
+
 
 # System Files
 .DS_Store

@@ -44,21 +44,26 @@ app.use(express.json());
 app.use(express.urlencoded({ extended: false }));
 
 // allow access to static files
-app.use('/images', express.static(path.join('backend/images')));
+app.use('/images', express.static(path.join(__dirname, 'images')));
+app.use('/', express.static(path.join(__dirname, 'angular')));
 
-// manual setup for CORS handle
-app.use((req, res, next) => {
-   res.setHeader("Access-Control-Allow-Origin", "*");
-   res.setHeader("Access-Control-Allow-Headers", 
-      "Origin, X-Requested-With, Content-Type, Accept, Authorization");
-   res.setHeader("Access-Control-Allow-Methods",
-      "GET, POST, PATCH, DELETE, OPTIONS");
-   next();
-});
+// manual setup for CORS handle, not required when angular app is integrated
+// app.use((req, res, next) => {
+//    res.setHeader("Access-Control-Allow-Origin", "*");
+//    res.setHeader("Access-Control-Allow-Headers", 
+//       "Origin, X-Requested-With, Content-Type, Accept, Authorization");
+//    res.setHeader("Access-Control-Allow-Methods",
+//       "GET, POST, PATCH, DELETE, OPTIONS");
+//    next();
+// });
 
 // move all routes to different route modules
 app.use('/api/posts', postsRoute);
 app.use('/api/auth', authRoute);
+// for any other route
+app.use((req, res) => {
+   res.sendFile(path.join(__dirname, "angular", "index.html"));
+});
 
 module.exports = app;
 

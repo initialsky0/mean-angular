@@ -1,3 +1,5 @@
 export const environment = {
-  production: true
+  production: true, 
+  apiUrl: "https://mean-angular-1.herokuapp.com/api"
+
 };
